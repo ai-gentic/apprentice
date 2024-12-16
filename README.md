@@ -7,12 +7,12 @@ It translates natural language descritpion using LLM into cloud CLI tool command
 - OpeanAI (GPT models)
 - Google Cloud Platform (Gemini)
 
-### Usage
-
-![apprentice --goal=gcp --model=gemini-1.5-pro-002 --model-provider=gcp --api-key=<your-key> --message="List all cloud sql instances"](doc/img.gif)
-
 ### Install
 
 ```bash
 cargo install --git https://github.com/ai-gentic/apprentice
 ```
+
+### Usage
+
+![apprentice --goal=gcp --model=gemini-1.5-pro-002 --model-provider=gcp --api-key=<your-key> --message="List all cloud sql instances"](doc/img.gif)
