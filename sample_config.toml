@@ -1,0 +1,42 @@
+default_context = "google_cloud"
+
+# Context contains a set of configuration parameters for the agent
+[google_cloud]
+goal = "gcp"                # The cloud provider agent will work with, one of gcp, aws, or azure
+model_provider = "openai"   # Model provider, one of: openai, anthropic, gcp
+model = "gpt-4"             # Model name
+api_key = "<your-api-key>"  # Model API key
+# api_version = "1.0"       # Other parameters (depending on the provider, some of the parameters may be required)
+# api_url = "https://api.openai.com/v1/chat/completions"  # Model API URL
+# max_tokens = 8192
+# n = 1
+# temperature = 0.0
+# top_p = 1.0
+# top_k = 10
+# frequency_penalty = 0.0
+# presence_penalty = 0.0
+# stop_sequence = ""
+# prompts_path = "project to use/resource group/region"
+
+# Second context
+[google_cloud_gemini]
+goal = "gcp"
+model_provider = "gcp"
+model = "gemini-1.5-pro-002"
+api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-002:generateContent"
+api_key = "<your-api-key>"
+
+# Third context
+[aws]
+goal = "aws"
+model_provider = "anthropic"
+model = "claude-3-5-sonnet-20241022"
+api_url = "https://api.anthropic.com/v1/messages"
+api_key = "<your-api-key>"
+api_version = "2023-06-01"
+max_tokens = 1024
+
+[settings]
+user_color = "fg(128,0,0);bg(0,0,0)"
+apprentice_color = "fg(0,128,0);bg(0,0,0)"
+tool_color = "fg(128,128,0);bg(0,0,0)"

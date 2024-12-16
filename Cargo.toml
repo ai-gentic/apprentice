@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "apprentice_lib",
+    "apprentice",
+]
+resolver = "2"
+
+[workspace.dependencies]
+apprentice_lib = { path = "apprentice_lib" }

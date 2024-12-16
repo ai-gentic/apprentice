@@ -1,0 +1,13 @@
+[package]
+name = "apprentice_lib"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+reqwest = { version="0.12.9", features = ["json", "blocking"] }
+thiserror = "1.0.69"
+serde = {version = "1.0.215", features=["derive"]}
+serde_json = "1.0.133"
+
+[lib]
+name = "apprentice_lib"
