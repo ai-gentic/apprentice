@@ -1,5 +1,5 @@
 Apprentice is an assistant that helps to manage cloud resources using natural language.
-It translates natural language descritpion using LLM into cloud CLI tool command and executes it.
+It translates natural language descritpion into a cloud CLI tool command and executes it.
 
 ### API providers
 
@@ -7,11 +7,15 @@ It translates natural language descritpion using LLM into cloud CLI tool command
 - OpeanAI (GPT models)
 - Google Cloud Platform (Gemini)
 
-### Install
+### Installation
+
+For Rust users:
 
 ```bash
 cargo install --git https://github.com/ai-gentic/apprentice
 ```
+
+Download [binaries](https://github.com/ai-gentic/apprentice/releases).
 
 ### Usage
 
