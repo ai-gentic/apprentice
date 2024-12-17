@@ -1,6 +1,6 @@
 [package]
 name = "apprentice"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [dependencies]
@@ -10,7 +10,7 @@ dirs = "5.0.1"
 thiserror = "1.0.69"
 toml = "0.8.19"
 futures-io = { version = "0.2.0-beta" }
-rustyline = { version = "15.0.0", default-features = false }
+rustyline = { version = "15.0.0", default-features = false, features = ["derive"] }
 apprentice_lib = { workspace = true }
 
 [[bin]]

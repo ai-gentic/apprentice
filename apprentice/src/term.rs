@@ -1,5 +1,7 @@
+use std::borrow::Cow;
+
 use crate::{config::Config, style::Styles, error::AppError};
-use rustyline::DefaultEditor;
+use rustyline::{config::BellStyle, highlight::{CmdKind, Highlighter}, history::MemHistory, Completer, CompletionType, EditMode, Editor, Helper, Hinter, Validator};
 
 const LOGO: &str = r"
     ___    ___   ___   ___   ____ _  __ ______ ____ _____ ____
@@ -20,29 +22,43 @@ pub struct Term {
     apprentice_prompt: String, 
     styles: Styles,
     dumb: bool,
-    editor: DefaultEditor,
+    editor: Editor<RlineHelper, MemHistory>,
 }
 
 impl Term {
     /// New instance.
     pub fn new(config: &Config) -> Result<Self, AppError> {
         let styles = Styles::new(config);
-        let editor = DefaultEditor::new()?;
+
+        let rline_config = rustyline::Config::builder()
+            .history_ignore_space(true)
+            .auto_add_history(true)
+            .bell_style(BellStyle::None)
+            .check_cursor_position(true)
+            .completion_type(CompletionType::List)
+            .edit_mode(EditMode::Emacs)
+            .build();
 
         let (user_prompt, apprentice_prompt, dumb) = 
-            if Ok("dumb") == std::env::var("TERM").as_deref() {
-                (
-                    "USER> ".to_owned(),
-                    "APPRENTICE> ".to_owned(),
-                    true,
-                )
-            } else {
-                (
-                    format!("{} USER {:#}{} {:#}", styles.user_prompt, styles.user_prompt, styles.user_prompt_arrow, styles.user_prompt_arrow),
-                    format!("{} APPRENTICE {:#}{} {:#}", styles.apprentice_prompt, styles.apprentice_prompt, styles.apprentice_prompt_arrow, styles.apprentice_prompt_arrow),
-                    false,
-                )
-            };
+        if Ok("dumb") == std::env::var("TERM").as_deref() {
+            (
+                "USER> ".to_owned(),
+                "APPRENTICE> ".to_owned(),
+                true,
+            )
+        } else {
+            (
+                format!("{} USER {:#}{} {:#}", styles.user_prompt, styles.user_prompt, styles.user_prompt_arrow, styles.user_prompt_arrow),
+                format!("{} APPRENTICE {:#}{} {:#}", styles.apprentice_prompt, styles.apprentice_prompt, styles.apprentice_prompt_arrow, styles.apprentice_prompt_arrow),
+                false,
+            )
+        };
+
+        let mut editor: Editor<RlineHelper, MemHistory> = Editor::with_config(rline_config)?;
+        let h = RlineHelper {
+            colored_prompt: String::new()
+        };
+        editor.set_helper(Some(h));
 
         Ok(Term {
             user_prompt,
@@ -58,7 +74,8 @@ impl Term {
         if self.dumb {
             self.editor.readline(&self.user_prompt).map_err(|e| e.into())
         } else {
-            let ret = self.editor.readline(&format!("{}{}", &self.user_prompt, self.styles.user_text));
+            self.editor.helper_mut().unwrap().colored_prompt = format!("{}{}", &self.user_prompt, self.styles.user_text);
+            let ret = self.editor.readline(" USER > ");
             print!("{:#}", self.styles.user_text);
             ret.map_err(|e| e.into())
         }
@@ -105,7 +122,7 @@ impl Term {
         if self.dumb {
             self.editor.readline(&format!("{}> {}", tool, text)).map_err(|e| e.into())
         } else {
-            let ret = self.editor.readline(&format!("{} {} {:#}{} {:#}{}{}", 
+            self.editor.helper_mut().unwrap().colored_prompt = format!("{} {} {:#}{} {:#}{}{}", 
                 self.styles.tool_prompt,
                 tool, 
                 self.styles.tool_prompt,
@@ -113,7 +130,8 @@ impl Term {
                 self.styles.tool_prompt_arrow,
                 self.styles.tool_text,
                 text
-            ));
+            );
+            let ret = self.editor.readline(&format!(" {} > {}", tool, text));
             print!("{:#}", self.styles.tool_text);
             ret.map_err(|e| e.into())
         }
@@ -134,5 +152,48 @@ impl Term {
         if !self.dumb { print!("{}", self.styles.apprentice_text); }
         print!("{}", HELP);
         if !self.dumb { println!("{:#}", self.styles.apprentice_text); }
+    }
+}
+
+
+#[derive(Helper, Validator, Hinter, Completer)]
+struct RlineHelper {
+    colored_prompt: String,
+}
+
+impl Highlighter for RlineHelper {
+    fn highlight<'l>(&self, line: &'l str, pos: usize) -> Cow<'l, str> {
+        let _ = pos;
+        Cow::Borrowed(line)
+    }
+
+    fn highlight_prompt<'b, 's: 'b, 'p: 'b>(
+        &'s self,
+        prompt: &'p str,
+        default: bool,
+    ) -> Cow<'b, str> {
+        if default {
+            Cow::Borrowed(&self.colored_prompt)
+        } else {
+            Cow::Borrowed(prompt)
+        }
+    }
+
+    fn highlight_hint<'h>(&self, hint: &'h str) -> Cow<'h, str> {
+        Cow::Borrowed(hint)
+    }
+
+    fn highlight_candidate<'c>(
+        &self,
+        candidate: &'c str, // FIXME should be Completer::Candidate
+        completion: rustyline::CompletionType,
+    ) -> Cow<'c, str> {
+        let _ = completion;
+        Cow::Borrowed(candidate)
+    }
+
+    fn highlight_char(&self, line: &str, pos: usize, kind: CmdKind) -> bool {
+        let _ = (line, pos, kind);
+        false
     }
 }
