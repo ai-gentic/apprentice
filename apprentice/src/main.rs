@@ -8,6 +8,7 @@ mod term;
 mod toml_parser;
 mod util;
 mod tools;
+mod rag;
 
 use agent::Agent;
 use error::AppError;

@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::prompts::Prompts;
+use crate::rag;
 use crate::tools::{Help, Shell};
 use apprentice_lib::llm::{get_llm_chat, LLMChat, Message, Role, ToolCall};
 use apprentice_lib::tools::ToolChoice;
@@ -16,6 +17,7 @@ pub struct Agent {
     shell: Shell,
     help: Help,
     chat: Box<dyn LLMChat>,
+    embedding: Box<dyn rag::Embedding>,
 }
 
 impl Agent {
@@ -23,6 +25,9 @@ impl Agent {
     /// Create new agent.
     pub fn new(config: Config, prompts: Prompts) -> Result<Self, AppError> {
         let term = Term::new(&config)?;
+
+        term.print_logo();
+
         let shell = Shell::new();
         let help = Help::new(config.goal);
 
@@ -31,9 +36,17 @@ impl Agent {
             help.get_tool_spec()
         ];
 
+        term.loading_progress("Initializing embeddings model...");
+
+        let embedding = rag::get_embedding(rag::Type::HuggingFace)?;
+
+        term.loading_progress("Intitializing chat with llm...");
+
         let reqwest_client = get_reqwest_client()?;
         let mut chat = get_llm_chat(config.model_params.clone(), reqwest_client, tools)?;
         chat.set_system_prompt(prompts.get(0)?.into());
+
+        term.loading_progress("Apprentice is ready.");
 
         Ok(Agent {
             shell,
@@ -41,12 +54,13 @@ impl Agent {
             config,
             term,
             chat,
+            embedding,
         })
     }
 
     /// Run agent.
     pub fn run(&mut self) -> Result<(), AppError> {
-        self.term.print_into();
+        self.term.loading_progress("For help use ?, to exit use Ctrl+C");
 
         let mut next_message = if let Some(first_message) = &self.config.message {
             let user_message = Message::text(Role::User, first_message.clone());

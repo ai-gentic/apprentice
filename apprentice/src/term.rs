@@ -9,8 +9,6 @@ const LOGO: &str = r"
   / __ | / ___// ___// , _// _/ /    /  / /  _/ / / /__ / _/  
  /_/ |_|/_/   /_/   /_/|_|/___//_/|_/  /_/  /___/ \___//___/";
 
-const INSTRUCTIONS: &str = "For help use ?, to exit use Ctrl+C";
-
 const HELP: &str = "You are in a dialogue with Apprentice, please enter your request. 
 Apprentice can ask clarifying questions, use tools, for example, 
 execute a shell command (each time it will ask for user confirmation), etc.
@@ -91,11 +89,11 @@ impl Term {
     }
 
     /// Print logo and instructions.
-    pub fn print_into(&self) {
+    pub fn print_logo(&self) {
         if self.dumb {
-            println!("{}\n (ver. {})\n\n{}", LOGO, env!("CARGO_PKG_VERSION"), INSTRUCTIONS);
+            println!("{}\n (ver. {})\n", LOGO, env!("CARGO_PKG_VERSION"));
         } else {
-            println!("{}{}\n (ver. {})\n\n{}{:#}", self.styles.apprentice_text, LOGO,  env!("CARGO_PKG_VERSION"), INSTRUCTIONS, self.styles.apprentice_text);
+            println!("{}{}\n (ver. {}){:#}\n", self.styles.apprentice_text, LOGO,  env!("CARGO_PKG_VERSION"), self.styles.apprentice_text);
         }
     }
 
@@ -151,7 +149,14 @@ impl Term {
     pub fn print_help(&self) {
         if !self.dumb { print!("{}", self.styles.apprentice_text); }
         print!("{}", HELP);
-        if !self.dumb { println!("{:#}", self.styles.apprentice_text); }
+        if !self.dumb { println!("{:#}", self.styles.apprentice_text); } else { println!(); }
+    }
+
+    /// Loading messages.
+    pub fn loading_progress(&self, message: &str) {
+        if !self.dumb { print!("{}", self.styles.apprentice_text); }
+        print!("{}", message);
+        if !self.dumb { println!("{:#}", self.styles.apprentice_text); } else { println!(); }
     }
 }
 
