@@ -1,6 +1,6 @@
 use crate::config::Config;
 use crate::prompts::Prompts;
-use crate::rag;
+use apprentice_lib::rag;
 use crate::tools::{Help, Shell};
 use apprentice_lib::llm::{get_llm_chat, LLMChat, Message, Role, ToolCall};
 use apprentice_lib::tools::ToolChoice;

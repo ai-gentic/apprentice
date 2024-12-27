@@ -1,10 +1,12 @@
+//! Embeddings using hugging face.
+
 use candle_core::{Device, Tensor};
 use hf_hub::{api::sync::Api, Repo, RepoType};
 use tokenizers::Tokenizer;
 use candle_transformers::models::bert::{BertModel, Config, HiddenAct, DTYPE};
 use candle_nn::VarBuilder;
 
-use crate::error::AppError;
+use crate::error::Error;
 
 use super::Embedding;
 
@@ -21,7 +23,7 @@ impl GenEmbeddings {
         revision: String,
         use_pth: bool,
         device: Device,
-        approximate_gelu: bool) -> Result<Self, AppError> 
+        approximate_gelu: bool) -> Result<Self, Error> 
     {
         let repo = Repo::with_revision(model_id, RepoType::Model, revision);
         let (config_filename, tokenizer_filename, weights_filename) = {
@@ -39,11 +41,11 @@ impl GenEmbeddings {
         };
 
         let config = std::fs::read_to_string(config_filename.clone())
-            .map_err(|e| AppError::Error(format!("Failed to load {}: {}", config_filename.to_string_lossy(), e)))?;
+            .map_err(|e| Error::Error(format!("Failed to load {}: {}", config_filename.to_string_lossy(), e)))?;
         let mut config: Config = serde_json::from_str(&config)
-            .map_err(|e| AppError::Error(format!("Failed to parse json from {}: {}", config_filename.to_string_lossy(), e)))?;
+            .map_err(|e| Error::Error(format!("Failed to parse json from {}: {}", config_filename.to_string_lossy(), e)))?;
         let tokenizer = Tokenizer::from_file(tokenizer_filename.clone())
-            .map_err(|e| AppError::Error(format!("Failed to load tokenizer from {}: {}", tokenizer_filename.to_string_lossy(), e)))?;
+            .map_err(|e| Error::Error(format!("Failed to load tokenizer from {}: {}", tokenizer_filename.to_string_lossy(), e)))?;
 
         let vb = if use_pth {
             VarBuilder::from_pth(&weights_filename, DTYPE, &device)?
@@ -62,25 +64,25 @@ impl GenEmbeddings {
         })
     }   
 
-    fn normalize_l2(v: &Tensor) -> Result<Tensor, AppError> {
+    fn normalize_l2(v: &Tensor) -> Result<Tensor, Error> {
         Ok(v.broadcast_div(&v.sqr()?.sum_keepdim(1)?.sqrt()?)?)
     }
 }
 
 impl Embedding for GenEmbeddings {
 
-    fn get_embeddings(&mut self, prompt: &str) -> Result<Vec<f32>, AppError>  {
+    fn get_embeddings(&mut self, prompt: &str) -> Result<Vec<f32>, Error>  {
 
         let device = &self.model.device;
 
         let tokenizer = self.tokenizer
             .with_padding(None)
             .with_truncation(None)
-            .map_err(|e| AppError::Error(format!("tokenizer build error: {}", e)))?;
+            .map_err(|e| Error::Error(format!("tokenizer build error: {}", e)))?;
 
         let tokens = tokenizer
             .encode(prompt, true)
-            .map_err(|e| AppError::Error(format!("tokenization error: {}", e)))?
+            .map_err(|e| Error::Error(format!("tokenization error: {}", e)))?
             .get_ids()
             .to_vec();
 

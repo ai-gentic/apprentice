@@ -52,6 +52,7 @@
 
 mod error;
 mod config;
+pub mod rag;
 pub mod llm;
 pub mod tools;
 pub mod request;

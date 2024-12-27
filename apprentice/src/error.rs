@@ -36,14 +36,6 @@ pub enum AppError {
     #[error("The format of the color value is incorrect")]
     ColorParseError,
 
-    /// Embedding with candle error.
-    #[error("Candle core error: {0}")]
-    CandleCoreError(#[from] candle_core::Error),
-
-    /// Hf API error.
-    #[error("Huggingface hub API call: {0}")]
-    HfApiCall(#[from] hf_hub::api::sync::ApiError),
-
     /// Application logic error.
     #[error("Application error: {0}")]
     ApplicationError(&'static str),

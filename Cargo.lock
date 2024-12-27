@@ -81,17 +81,11 @@ version = "0.1.1"
 dependencies = [
  "anstyle",
  "apprentice_lib",
- "candle-core",
- "candle-nn",
- "candle-transformers",
  "clap",
  "dirs",
  "futures-io 0.2.1",
- "hf-hub",
  "rustyline",
- "serde_json",
  "thiserror",
- "tokenizers",
  "toml",
 ]
 
@@ -99,10 +93,15 @@ dependencies = [
 name = "apprentice_lib"
 version = "0.1.1"
 dependencies = [
+ "candle-core",
+ "candle-nn",
+ "candle-transformers",
+ "hf-hub",
  "reqwest",
  "serde",
  "serde_json",
  "thiserror",
+ "tokenizers",
 ]
 
 [[package]]

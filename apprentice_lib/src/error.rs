@@ -31,4 +31,12 @@ pub enum Error {
     #[cfg(test)]
     #[error("Test error: {0}")]
     ForTests(&'static str),
+    
+    /// Embedding with candle error.
+    #[error("Candle core error: {0}")]
+    CandleCoreError(#[from] candle_core::Error),
+
+    /// Hf API error.
+    #[error("Huggingface hub API call: {0}")]
+    HfApiCall(#[from] hf_hub::api::sync::ApiError),
 }
